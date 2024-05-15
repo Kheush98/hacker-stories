@@ -1,6 +1,9 @@
 import * as React from 'react';
+import { useEffect } from 'react';
 
 const App = () => {
+  const [searchTerm, setSearchTerm] = React.useState(localStorage.getItem('search') || '');
+
   const stories = [
     {
       title: 'React',
@@ -20,58 +23,55 @@ const App = () => {
     },
   ];
 
+  useEffect(() => {
+    localStorage.setItem('search', searchTerm);
+  }, [searchTerm]);
+
   const handleSearch = (event) => {
-    console.log(event.target.value);
+    setSearchTerm(event.target.value)
   }
 
+  const searchStories = stories.filter((item) => item.title.toLowerCase().includes(searchTerm.toLowerCase()))
+    
   return (
     <div>
       <h1>My Hacker Stories</h1>
 
-      <Search onSearch={handleSearch} />
+      <Search search={searchTerm} onSearch={handleSearch} />
 
       <hr />
 
-      <List list={stories} />
+      <List list={searchStories} />
     </div>
   );
 };
 
-const Search = (props) => {
-  const [text, setText] = React.useState('');
-
-  const handleChange = (event) => {
-
-    setText(event.target.value)
-
-    props.onSearch(event)
-  };
+const Search = ({search, onSearch}) => {
 
   return (
     <div>
       <label htmlFor="search">Search: </label>
-      <input id="search" type="text" onChange={handleChange} />
-      <p>{ text }</p>
+      <input value={search} id="search" type="text" onChange={onSearch} />
     </div>
   );
 };
 
-const List = (props) => (
+const List = ({list}) => (
   <ul>
-    {props.list.map((item) => (
-      <Item key={item.objectID} item={item} />
+    {list.map(({objectID, ...item}) => (
+      <Item key={objectID} {...item} />
     ))}
   </ul>
 );
 
-const Item = (props) => (
+const Item = ({ title, url, author, num_comments, points }) => (
   <li>
     <span>
-      <a href={props.item.url}>{props.item.title}</a>
+      <a href={url}>{title}</a>
     </span>
-    <span>{props.item.author}</span>
-    <span>{props.item.num_comments}</span>
-    <span>{props.item.points}</span>
+    <span>{author}</span>
+    <span>{num_comments}</span>
+    <span>{points}</span>
   </li>
 );
 
